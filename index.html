@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mi Tier List de Anime y Manga</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-dark: #0b0c10;
+      --card-bg: #1f2833;
+      --text-main: #edf5e1;
+      --text-muted: #c5c6c7;
+      
+      --tier-s: #ff0055;
+      --tier-a: #ff7700;
+      --tier-b: #ffcc00;
+      --tier-c: #6c757d;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: 'Poppins', sans-serif;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 2.2rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: #fff;
+      text-shadow: 0 0 10px rgba(255, 0, 85, 0.5), 0 0 20px rgba(0, 225, 255, 0.3);
+      margin-bottom: 1.5rem;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1rem;
+      max-width: 800px;
+      margin: 0 auto 2.5rem auto;
+    }
+
+    .controls input, .controls select {
+      background: #12151e;
+      border: 1px solid #333;
+      color: var(--text-main);
+      padding: 0.75rem 1.2rem;
+      border-radius: 8px;
+      font-size: 1rem;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+
+    .controls input:focus, .controls select:focus {
+      border-color: #00e1ff;
+      box-shadow: 0 0 10px rgba(0, 225, 255, 0.4);
+    }
+
+    .tier-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .tier-row {
+      display: flex;
+      background: var(--card-bg);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .tier-label {
+      width: 160px;
+      min-width: 160px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 800;
+      font-size: 1.1rem;
+      text-align: center;
+      text-transform: uppercase;
+      color: #000;
+    }
+
+    .tier-s .tier-label { background-color: var(--tier-s); box-shadow: 5px 0 15px rgba(255, 0, 85, 0.4); }
+    .tier-a .tier-label { background-color: var(--tier-a); box-shadow: 5px 0 15px rgba(255, 119, 0, 0.4); }
+    .tier-b .tier-label { background-color: var(--tier-b); box-shadow: 5px 0 15px rgba(255, 204, 0, 0.4); }
+    .tier-c .tier-label { background-color: var(--tier-c); color: #fff; box-shadow: 5px 0 15px rgba(108, 117, 125, 0.4); }
+
+    .tier-content {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      padding: 1rem;
+      flex: 1;
+      align-items: flex-start;
+      min-height: 180px;
+    }
+
+    .anime-card {
+      width: 110px;
+      background: #12151e;
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .anime-card:hover {
+      transform: translateY(-5px) scale(1.03);
+      box-shadow: 0 8px 15px rgba(0, 225, 255, 0.3);
+      z-index: 2;
+    }
+
+    .anime-img-wrapper {
+      width: 100%;
+      height: 155px;
+      background: #181d29;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .anime-img-wrapper img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: none; /* Se oculta hasta que carga */
+    }
+
+    .loading-text {
+      color: #00e1ff;
+      font-size: 0.7rem;
+      font-weight: bold;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 0.5; }
+      50% { opacity: 1; }
+      100% { opacity: 0.5; }
+    }
+
+    .fallback-box {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px;
+      text-align: center;
+      font-size: 0.65rem;
+      color: #00e1ff;
+      font-weight: 700;
+      background: linear-gradient(135deg, #1f2833, #0b0c10);
+    }
+
+    .anime-title {
+      padding: 0.4rem 0.3rem;
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-align: center;
+      line-height: 1.1;
+      color: var(--text-muted);
+      height: 42px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    @media (max-width: 768px) {
+      .tier-row { flex-direction: column; }
+      .tier-label { width: 100%; min-width: 100%; padding: 0.6rem; }
+      .anime-card { width: 95px; }
+      .anime-img-wrapper { height: 135px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>MI ANIME TIER LIST</h1>
+    <div class="controls">
+      <input type="text" id="searchBar" placeholder="Buscar por título..." oninput="filterAnimes()">
+      <select id="categoryFilter" onchange="filterAnimes()">
+        <option value="all">Todas las categorías</option>
+        <option value="s">Muy Bueno</option>
+        <option value="a">Bueno</option>
+        <option value="b">Ni tan bien ni tan mal</option>
+        <option value="c">Aburrido</option>
+      </select>
+    </div>
+  </header>
+
+  <main class="tier-container">
+    <div class="tier-row tier-s" data-tier="s">
+      <div class="tier-label">Muy Bueno</div>
+      <div class="tier-content" id="list-s"></div>
+    </div>
+
+    <div class="tier-row tier-a" data-tier="a">
+      <div class="tier-label">Bueno</div>
+      <div class="tier-content" id="list-a"></div>
+    </div>
+
+    <div class="tier-row tier-b" data-tier="b">
+      <div class="tier-label">Ni tan bien<br>ni tan mal</div>
+      <div class="tier-content" id="list-b"></div>
+    </div>
+
+    <div class="tier-row tier-c" data-tier="c">
+      <div class="tier-label">Aburrido</div>
+      <div class="tier-content" id="list-c"></div>
+    </div>
+  </main>
+
+  <script>
+    // Tu lista base
+    const animeData = [
+      // Muy Bueno (S)
+      { title: "Tensei shitara slime datta ken", category: "s" },
+      { title: "Mairimashita! Iruma-kun", category: "s" },
+      { title: "Rooster Fighter", category: "s" }, // Niwatori Fighter
+      { title: "Tsue to Tsurugi no Wistoria", category: "s" },
+      { title: "Class de 2-banme ni Kawaii Onnanoko", category: "s" },
+      { title: "Akane-banashi", category: "s" },
+      { title: "Koori no Jouheki", category: "s" },
+
+      // Bueno (A)
+      { title: "Otonari no Tenshi-sama", category: "a" },
+      { title: "Isekai Nonbiri Nouka", category: "a" },
+      { title: "Haibara-kun no Tsuyokute Seishun", category: "a" },
+      { title: "Baki-dou", category: "a" },
+      { title: "Ponkotsu Fuuki Iin to Skirt-take", category: "a" },
+      { title: "Kill Ao", category: "a" },
+      { title: "Himekishi wa Barbaroi no Yome", category: "a" },
+      { title: "Otaku ni Yasashii Gal wa Inai!?", category: "a" },
+      { title: "Tadaima, Ojamasaremasu!", category: "a" },
+      { title: "Kanan-sama wa Akumade Choroi", category: "a" },
+      { title: "Reincarnation no Kaben", category: "a" },
+      { title: "Yozakura-san Chi no Daisakusen", category: "a" },
+      { title: "Marriagetoxin", category: "a" },
+
+      // Ni tan bien ni tan mal (B)
+      { title: "Saikyou no Ousama, Nidome no Jinsei", category: "b" },
+      { title: "Higeki no Genkyou to Naru", category: "b" },
+      { title: "Nigashita Sakana wa Ookikatta", category: "b" },
+      { title: "Aishiteru Game wo Owarasetai", category: "b" },
+      { title: "Tongari Boushi no Atelier", category: "b" },
+      { title: "Jishou Akuyaku Reijou na Konyakusha", category: "b" },
+      { title: "Kujima Utaeba Ie Hororo", category: "b" },
+      { title: "Daikenja Riddle no Jikan Gyakkou", category: "b" },
+      { title: "Mamonogurai no Boukensha", category: "b" },
+      { title: "Ingoku Danchi", category: "b" },
+      { title: "Yowayowa Sensei", category: "b" },
+      { title: "Kami no Niwatsuki Kusunoki-tei", category: "b" },
+
+      // Aburrido (C)
+      { title: "Saikyou no Shokugyou wa Yuusha", category: "c" },
+      { title: "Kirio Fanclub", category: "c" },
+      { title: "Hyakki Yakoushou", category: "c" },
+      { title: "Ichijouma Mankitsugurashi!", category: "c" },
+      { title: "Kamiina Botan", category: "c" },
+      { title: "Megami Isekai Tensei", category: "c" }
+    ];
+
+    // Función para renderizar la interfaz rápido, sin esperar a las imágenes
+    function renderUI() {
+      animeData.forEach((anime, index) => {
+        const container = document.getElementById(`list-${anime.category}`);
+        if (!container) return;
+
+        const card = document.createElement('div');
+        card.className = 'anime-card';
+        card.setAttribute('data-name', anime.title.toLowerCase());
+
+        card.innerHTML = `
+          <div class="anime-img-wrapper" id="wrapper-${index}">
+            <div class="loading-text" id="loading-${index}">Cargando...</div>
+            <img id="img-${index}" alt="${anime.title}">
+          </div>
+          <div class="anime-title" title="${anime.title}">${anime.title}</div>
+        `;
+
+        container.appendChild(card);
+
+        // Desfasamos ligeramente las peticiones (150ms) para que cargue fluído y evite cualquier Rate Limit
+        setTimeout(() => {
+          fetchAnimeCover(anime.title, index);
+        }, index * 150);
+      });
+    }
+
+    // Consulta a la API GraphQL de AniList (Anti-CORS / Anti-Hotlink Block)
+    async function fetchAnimeCover(title, index) {
+      // Query GraphQL: Busca el título exacto, sea Manga o Anime, y devuelve su portada
+      const query = `
+        query ($search: String) {
+          Media (search: $search) {
+            coverImage {
+              large
+            }
+          }
+        }
+      `;
+
+      try {
+        const response = await fetch('https://graphql.anilist.co', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          body: JSON.stringify({
+            query: query,
+            variables: { search: title }
+          })
+        });
+
+        const data = await response.json();
+        const imgElement = document.getElementById(`img-${index}`);
+        const loadingText = document.getElementById(`loading-${index}`);
+        const wrapper = document.getElementById(`wrapper-${index}`);
+
+        if (data.data && data.data.Media && data.data.Media.coverImage.large) {
+          imgElement.src = data.data.Media.coverImage.large;
+          imgElement.onload = () => {
+            loadingText.style.display = 'none';
+            imgElement.style.display = 'block';
+          };
+        } else {
+          // Si no lo encuentra en la base de datos
+          throw new Error("No encontrado");
+        }
+      } catch (error) {
+        // Fallback elegante
+        const wrapper = document.getElementById(`wrapper-${index}`);
+        wrapper.innerHTML = `<div class="fallback-box">${title}</div>`;
+      }
+    }
+
+    // Filtros
+    function filterAnimes() {
+      const searchValue = document.getElementById('searchBar').value.toLowerCase();
+      const selectedCategory = document.getElementById('categoryFilter').value;
+      const rows = document.querySelectorAll('.tier-row');
+
+      rows.forEach(rowsItem => {
+        const rowTier = rowsItem.getAttribute('data-tier');
+        const cards = rowsItem.querySelectorAll('.anime-card');
+        let hasVisibleCards = false;
+
+        if (selectedCategory !== 'all' && selectedCategory !== rowTier) {
+          rowsItem.style.display = 'none';
+          return;
+        }
+
+        cards.forEach(card => {
+          const name = card.getAttribute('data-name');
+          const matchesSearch = name.includes(searchValue);
+
+          if (matchesSearch) {
+            card.style.display = 'flex';
+            hasVisibleCards = true;
+          } else {
+            card.style.display = 'none';
+          }
+        });
+
+        rowsItem.style.display = hasVisibleCards ? 'flex' : 'none';
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', renderUI);
+  </script>
+</body>
+</html>
